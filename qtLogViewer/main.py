@@ -15,7 +15,9 @@ from PyQt5.QtWidgets import QVBoxLayout
 from PyQt5.QtWidgets import QHBoxLayout
 from PyQt5.QtWidgets import QFormLayout
 from PyQt5.QtWidgets import QGridLayout
-from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtGui import QIcon, QPixmap, QFont
 from PyQt5.QtCore import QCoreApplication, Qt
 
 class MyApp(QDialog):
@@ -41,82 +43,97 @@ class MyApp(QDialog):
         app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
 #        app.setStyleSheet(open("style.qss", "r").read())    
     
-        self.imgLabel = QLabel(self)
+        fontTitle = QFont("Tahoma", 14, QFont.Bold) 
+        fontText = QFont("Tahoma", 10, QFont.Normal) 
+        self.setFont(fontText)
+
+        self.lbImage = QLabel(self)
         pixmap = QPixmap('res/app.png')
-        resize_pixmap = pixmap.scaled(128, 128, Qt.KeepAspectRatio, Qt.FastTransformation)
-        self.imgLabel.setPixmap(resize_pixmap)
-
-        self.btnQuit = QPushButton('Quit', self)
-#        self.btnQuit.move(50, 50)
-#        self.btnQuit.resize(self.quitButton.sizeHint())
-        self.btnQuit.clicked.connect(QCoreApplication.instance().quit)
-
-        stl = """QPushButton {
-            background-color: #179AE0;
-            border: 1px solid #31363B;
-            color: #EFF0F1;
-            border-radius: 4px;
-            padding: 3px;
-            outline: none;
-        }
-        QPushButton:hover {
-            background: #179AE0;
-            border: 1px solid #31363B;
-            color: #31363B;
-        }"""
-
-        self.btnOk = QPushButton('Make graph', self)
-        self.btnOk.setStyleSheet(open("style.qss", "r").read())
-#        self.btnOk.move(50, 100)
-#        self.btnOk.resize(self.okButton.sizeHint())
-
-        self.leSep = QLineEdit()
-        self.leSep.setPlaceholderText("Delimiter to use. Default ,(comma)")
-        self.leQuote = QLineEdit()
-        self.leQuote.setPlaceholderText("""The character used to denote the start and end of a quoted item. default "(Double quote) """)
-        self.leDecimal = QLineEdit()
-        self.leDecimal.setPlaceholderText("Decimal point. Default .(dot)")
+        resize_pixmap = pixmap.scaled(64, 64, Qt.KeepAspectRatio, Qt.FastTransformation)
+        self.lbImage.setPixmap(resize_pixmap)
+        self.lbDesc = QLabel('Quintet log file viewer', self)
+        self.lbDesc.setFont(fontTitle)
 
         self.leFile = QLineEdit()
         self.leFile.setPlaceholderText("Select .csv or .xlsx")
-        self.btnFile = QPushButton("Choose", self)
+        self.leFile.setFont(fontText)
 
+        self.btnFile = QPushButton("Choose", self)
+        self.btnFile.clicked.connect(self.btnFile_clicked)
+
+        lbFile = QLabel("File:", self)
+        lbSep = QLabel("Seperator:", self)
+        lbDec = QLabel("Decimal:", self)
+        self.leSep = QLineEdit()
+        self.leSep.setFont(fontText)
+        self.leSep.setPlaceholderText("Delimiter to use. Default ,(comma)")
+        self.leDecimal = QLineEdit()
+        self.leDecimal.setFont(fontText)
+        self.leDecimal.setPlaceholderText("Decimal point. Default .(dot)")
+
+        self.btnOk = QPushButton('Make graph', self)
+        self.btnOk.setStyleSheet(open("mystyle.qss", "r").read())
+        self.btnOk.clicked.connect(self.btnOk_clicked)
+
+        self.btnQuit = QPushButton('Quit', self)
+        self.btnQuit.clicked.connect(QCoreApplication.instance().quit)
+
+        descLayout = QHBoxLayout()
+        descLayout.setAlignment(Qt.AlignLeft)
+        descLayout.setSpacing(10)
+        descLayout.setContentsMargins(10, 10, 10, 10)
+        descLayout.addWidget(self.lbImage)
+        descLayout.addWidget(self.lbDesc)
+        
         fileOpenLayout = QHBoxLayout()
-        fileOpenLayout.setSpacing(0)
+        fileOpenLayout.setSpacing(10)
         fileOpenLayout.setContentsMargins(0, 0, 0, 0)
         fileOpenLayout.addWidget(self.leFile)
         fileOpenLayout.addWidget(self.btnFile)
 
         propLayout = QGridLayout()
         propLayout.setAlignment(Qt.AlignCenter)
-        propLayout.addWidget(QLabel("File:"), 0, 0)
-        propLayout.addWidget(QLabel("Seperator:"), 1, 0)
-#        propLayout.addWidget(QLabel("Quote character:"), 1, 0)
-        propLayout.addWidget(QLabel("Decimal:"), 2, 0)
-
+        propLayout.setSpacing(10)
+        propLayout.setContentsMargins(0, 0, 0, 0)
+        propLayout.addWidget(lbFile, 0, 0)
+        propLayout.addWidget(lbSep, 1, 0)
+        propLayout.addWidget(lbDec, 2, 0)
         propLayout.addLayout(fileOpenLayout, 0, 1)
         propLayout.addWidget(self.leSep, 1, 1)
-#        propLayout.addWidget(self.leQuote, 1, 1)
         propLayout.addWidget(self.leDecimal, 2, 1)
 
         mainLayout = QVBoxLayout()
-        mainLayout.setAlignment(Qt.AlignCenter)
-        mainLayout.addWidget(self.imgLabel)
+        mainLayout.setSpacing(10)
+        mainLayout.setAlignment(Qt.AlignTop)
+        mainLayout.setContentsMargins(10, 10, 10, 10)
+        mainLayout.addLayout(descLayout)
         mainLayout.addLayout(propLayout)
         mainLayout.addWidget(self.btnOk)
         mainLayout.addWidget(self.btnQuit)
         self.setLayout(mainLayout)
+        self.adjustSize()
         self.show()
 
-    def focusInEvent(self, ev):
-        self.select_on_mouse_press = time.time()
-        return QLineEdit.focusInEvent(self, ev)
+#    def focusInEvent(self, ev):
+#        self.select_on_mouse_press = time.time()
+#        QLineEdit.focusInEvent(self, ev)
 
-    def mousePressEvent(self, ev):
-        QLineEdit.mousePressEvent(self, ev)
-        if self.select_on_mouse_press is not None and abs(time.time() - self.select_on_mouse_press) < 0.2:
-            print('clicked')
-        self.select_on_mouse_press = None
+#    def mousePressEvent(self, ev):
+#        self.leFile.mousePressEvent(self, ev)
+#        if self.select_on_mouse_press is not None and abs(time.time() - self.select_on_mouse_press) < 0.2:
+#        QMessageBox.about(self, "message", "clicked")
+#        self.select_on_mouse_press = None
+
+    def btnFile_clicked(self):
+        options = QFileDialog.Options()
+#        options |= QFileDialog.DontUseNativeDialog
+        fileName = QFileDialog.getOpenFileName(self, 'Open file', "","All Files (*);;CSV File (*.csv); Excel File (*.xlsx)", options=options)
+        if fileName:
+            self.leFile.setText(fileName[0])
+            print(fileName[0])
+ 
+    def btnOk_clicked(self):
+        QMessageBox.information(self, "message", "clicked")
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

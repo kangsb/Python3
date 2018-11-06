@@ -6,6 +6,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from datetime import datetime
+from bokeh.plotting import figure, output_file, show
+from bokeh.models import ColumnDataSource
+from bokeh.models.tools import HoverTool
 
 class DataProcess:
     def __init__(self, filename, sep=',', dec='.', quot='"'):

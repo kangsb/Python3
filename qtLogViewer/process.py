@@ -13,23 +13,27 @@ class DataProcess:
         self.dec = dec
         self.quot = quot
         self.filename = filename
-        fn, ext = os.path.splitext(filename)
-        print('fn = ' + fn)
-        print('ext = ' + ext)
-        if ext.upper() == '.CSV':
-            print('csv file')
-        elif ext.upper() == '.XLSX':
-            print('xlsx file')
+
+    def fileOpen(self):
+        _, ext = os.path.splitext(self.filename)
+        if ext.lower() == '.csv':
+            return self.openCSV()
+        elif ext.lower() == '.xlsx':
+            return self.openXlsx()
         else:
             print('unknown file')
-    
-    def openCSV(self, filename):
-        self.df = pd.read_csv(filename, sep=self.sep, quotechar=self.quot, decimal=self.dec)
-        return self.df.col
 
-    def openXlsx(self, filename):
-        self.df = pd.read_excel(filename)
-        return self.df.col
+    def openCSV(self):
+        self.df = pd.read_csv(self.filename, sep=self.sep, quotechar=self.quot, decimal=self.dec, low_memory=False)
+        return self.df.columns.tolist()
+
+    def openXlsx(self):
+        self.df = pd.read_excel(self.filename)
+        return self.df.columns.tolist()
+
+if __name__ == '__main__':
+    dp = DataProcess('sample.csv')
+    dp.fileOpen()
 
     
 

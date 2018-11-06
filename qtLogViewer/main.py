@@ -2,8 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import os
 import time
 import qdarkstyle
+from process import DataProcess
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QDialog
 from PyQt5.QtWidgets import QWidget
@@ -21,7 +23,7 @@ from PyQt5.QtGui import QIcon, QPixmap, QFont
 from PyQt5.QtCore import QCoreApplication, Qt
 
 class MyApp(QDialog):
-    select_on_mouse_press = None
+    fileName = None
 
     def __init__(self):
         super().__init__()
@@ -127,13 +129,30 @@ class MyApp(QDialog):
     def btnFile_clicked(self):
         options = QFileDialog.Options()
 #        options |= QFileDialog.DontUseNativeDialog
-        fileName = QFileDialog.getOpenFileName(self, 'Open file', "","All Files (*);;CSV File (*.csv); Excel File (*.xlsx)", options=options)
-        if fileName:
-            self.leFile.setText(fileName[0])
-            print(fileName[0])
+        openFileName = QFileDialog.getOpenFileName(self, 'Open file', "", "All Files (*);;csv File (*.csv);;xlsx File (*.xlsx)", options=options)
+        if openFileName != ('', ''):
+            _, ext = os.path.splitext(openFileName[0])
+            if ext.lower() != '.csv' and ext.lower() != '.xlsx':
+                QMessageBox.warning(self, "warning", "File extension error")
+                self.fileName = None
+            else:
+                self.fileName = openFileName[0]
+                self.leFile.setText(openFileName[0])
  
     def btnOk_clicked(self):
-        QMessageBox.information(self, "message", "clicked")
+        if self.fileName == None:
+            QMessageBox.warning(self, "warning", "Please select a file")
+        else:
+            sep = self.leSep.text()
+            sep = sep.replace(" ", "") 
+            dec = self.leDecimal.text()
+            dec = dec.replace(" ", "") 
+
+            sep = ',' if len(sep) == 0 else sep
+            dec = '.' if len(dec) == 0 else dec
+            print('sec = ' + sep + ', dec = ' + dec)
+            dp = DataProcess(filename=self.fileName, sep=sep, dec=dec, quot='"')
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

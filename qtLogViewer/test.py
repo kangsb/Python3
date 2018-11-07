@@ -4,97 +4,28 @@ https://github.com/bokeh/bokeh/tree/master/examples/plotting/file
 
 import numpy as np
 
-from bokeh.layouts import layout
-from bokeh.models import CustomJS, Slider, ColumnDataSource, WidgetBox
-from bokeh.plotting import figure, output_file, show
+from bokeh.io import output_file, show
+from bokeh.layouts import row
+from bokeh.palettes import Viridis3
+from bokeh.plotting import figure
+from bokeh.models import CheckboxGroup, CustomJS
 
-output_file('test.html')
+output_file("line_on_off.html", title="line_on_off.py example")
 
-tools = 'pan'
+p = figure()
+props = dict(line_width=4, line_alpha=0.7)
+x = np.linspace(0, 4 * np.pi, 100)
+l0 = p.line(x, np.sin(x), color=Viridis3[0], legend="Line 0", **props)
+l1 = p.line(x, 4 * np.cos(x), color=Viridis3[1], legend="Line 1", **props)
+l2 = p.line(x, np.tan(x), color=Viridis3[2], legend="Line 2", **props)
 
+checkbox = CheckboxGroup(labels=["Line 0", "Line 1", "Line 2"],
+                         active=[0, 1, 2], width=100)
+checkbox.callback = CustomJS.from_coffeescript(args=dict(l0=l0, l1=l1, l2=l2, checkbox=checkbox), code="""
+l0.visible = 0 in checkbox.active;
+l1.visible = 1 in checkbox.active;
+l2.visible = 2 in checkbox.active;
+""")
 
-def bollinger():
-    # Define Bollinger Bands.
-    upperband = np.random.randint(100, 150+1, size=100)
-    lowerband = upperband - 100
-    x_data = np.arange(1, 101)
-
-    # Bollinger shading glyph:
-    band_x = np.append(x_data, x_data[::-1])
-    band_y = np.append(lowerband, upperband[::-1])
-
-    p = figure(x_axis_type='datetime', tools=tools)
-    p.patch(band_x, band_y, color='#7570B3', fill_alpha=0.2)
-
-    p.title.text = 'Bollinger Bands'
-    p.title_location = 'left'
-    p.title.align = 'left'
-    p.plot_height = 600
-    p.plot_width = 800
-    p.grid.grid_line_alpha = 0.4
-    return [p]
-
-
-def slider():
-    x = np.linspace(0, 10, 100)
-    y = np.sin(x)
-
-    source = ColumnDataSource(data=dict(x=x, y=y))
-
-    plot = figure(
-        y_range=(-10, 10), tools='', toolbar_location=None,
-        title="Sliders example")
-    plot.line('x', 'y', source=source, line_width=3, line_alpha=0.6)
-
-    callback = CustomJS(args=dict(source=source), code="""
-        var data = source.data;
-        var A = amp.value;
-        var k = freq.value;
-        var phi = phase.value;
-        var B = offset.value;
-        var x = data['x']
-        var y = data['y']
-        for (var i = 0; i < x.length; i++) {
-            y[i] = B + A*Math.sin(k*x[i]+phi);
-        }
-        source.change.emit();
-    """)
-
-    amp_slider = Slider(start=0.1, end=10, value=1, step=.1, title="Amplitude", callback=callback, callback_policy='mouseup')
-    callback.args["amp"] = amp_slider
-
-    freq_slider = Slider(start=0.1, end=10, value=1, step=.1, title="Frequency", callback=callback)
-    callback.args["freq"] = freq_slider
-
-    phase_slider = Slider(start=0, end=6.4, value=0, step=.1, title="Phase", callback=callback)
-    callback.args["phase"] = phase_slider
-
-    offset_slider = Slider(start=-5, end=5, value=0, step=.1, title="Offset", callback=callback)
-    callback.args["offset"] = offset_slider
-
-    widgets = WidgetBox(amp_slider, freq_slider, phase_slider, offset_slider)
-    return [widgets, plot]
-
-
-def linked_panning():
-    N = 100
-    x = np.linspace(0, 4 * np.pi, N)
-    y1 = np.sin(x)
-    y2 = np.cos(x)
-    y3 = np.sin(x) + np.cos(x)
-
-    s1 = figure(tools=tools)
-    s1.circle(x, y1, color="navy", size=8, alpha=0.5)
-    s2 = figure(tools=tools, x_range=s1.x_range, y_range=s1.y_range)
-    s2.circle(x, y2, color="firebrick", size=8, alpha=0.5)
-    s3 = figure(tools='pan, box_select', x_range=s1.x_range)
-    s3.circle(x, y3, color="olive", size=8, alpha=0.5)
-    return [s1, s2, s3]
-
-l = layout([
-    bollinger(),
-    slider(),
-    linked_panning(),
-], sizing_mode='stretch_both')
-
-show(l)
+layout = row(checkbox, p)
+show(layout)

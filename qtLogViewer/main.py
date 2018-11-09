@@ -5,6 +5,7 @@ import sys
 import os
 import time
 import qdarkstyle
+from progressThread import *
 from process import DataProcess
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QDialog
@@ -19,23 +20,33 @@ from PyQt5.QtWidgets import QFormLayout
 from PyQt5.QtWidgets import QGridLayout
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtWidgets import QProgressBar
+
 from PyQt5.QtGui import QIcon, QPixmap, QFont
 from PyQt5.QtCore import QCoreApplication, Qt
+from PyQt5.QtCore import QThread
+
+from bokeh.io import output_file, show
+
 
 class MyApp(QDialog):
     fileName = None
 
     def __init__(self):
         super().__init__()
-        self.title = 'http://www.mopiens.com'
+        self.title = 'Log Viewer'
         self.left = 100
         self.top = 100
         self.width = 400
         self.height = 480
         self.initUI()
+        self.initProgressBar()
+
+    def initProgressBar(self):
+        self.pgsb = QProgressBar()
+
 
     def initUI(self):
-
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
 #        self.statusBar().showMessage('Message in statusbar.')
@@ -152,6 +163,12 @@ class MyApp(QDialog):
             dec = '.' if len(dec) == 0 else dec
             print('sec = ' + sep + ', dec = ' + dec)
             dp = DataProcess(filename=self.fileName, sep=sep, dec=dec, quot='"')
+            print('Program start...')
+            dp.fileOpen()
+            print('File opened.')
+            tabs = dp.makeTabWidget()
+            print('Tab generation finished.')
+            show(tabs)
 
 
 if __name__ == '__main__':

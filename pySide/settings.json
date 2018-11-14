@@ -1,0 +1,7 @@
+{
+    "python.pythonPath": "/Users/kangsb/GitHub/Python3/env/bin/python",
+    "python.linting.pylintPath": "/Users/kangsb/GitHub/Python3/env/bin/pylint",
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true,
+    "python.linting.pylintArgs": ["--extension-pkg-whitelist=PySide2"]
+}

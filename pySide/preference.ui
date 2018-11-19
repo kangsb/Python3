@@ -10,6 +10,11 @@
     <height>299</height>
    </rect>
   </property>
+  <property name="font">
+   <font>
+    <family>Microsoft YaHei</family>
+   </font>
+  </property>
   <property name="windowTitle">
    <string>Preference</string>
   </property>
@@ -27,7 +32,7 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QLabel" name="lbl_image">
+    <widget class="QLabel" name="lb_image">
      <property name="minimumSize">
       <size>
        <width>0</width>
@@ -50,27 +55,20 @@
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
        <layout class="QGridLayout" name="gridLayout">
-        <item row="1" column="1">
-         <widget class="QComboBox" name="comboBox">
+        <item row="2" column="1">
+         <widget class="QComboBox" name="cb_datetime">
           <property name="focusPolicy">
            <enum>Qt::StrongFocus</enum>
           </property>
          </widget>
         </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="label_5">
-          <property name="text">
-           <string>Decimal</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
-         <widget class="QLineEdit" name="lineEdit_2"/>
-        </item>
         <item row="3" column="1">
-         <widget class="QLineEdit" name="lineEdit_3"/>
+         <widget class="QLineEdit" name="le_seperator"/>
         </item>
-        <item row="1" column="0">
+        <item row="4" column="1">
+         <widget class="QLineEdit" name="le_decimal"/>
+        </item>
+        <item row="2" column="0">
          <widget class="QLabel" name="label_3">
           <property name="text">
            <string>Date/Time Format:</string>
@@ -80,19 +78,30 @@
         <item row="0" column="1">
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
-           <widget class="QLineEdit" name="lineEdit"/>
+           <widget class="QLineEdit" name="le_file"/>
           </item>
           <item>
-           <widget class="QToolButton" name="toolButton">
+           <widget class="QToolButton" name="tb_open">
             <property name="focusPolicy">
              <enum>Qt::StrongFocus</enum>
             </property>
             <property name="text">
              <string>...</string>
             </property>
+            <property name="icon">
+             <iconset resource="images.qrc">
+              <normaloff>:/icon/images/Open.png</normaloff>:/icon/images/Open.png</iconset>
+            </property>
            </widget>
           </item>
          </layout>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>Decimal</string>
+          </property>
+         </widget>
         </item>
         <item row="0" column="0">
          <widget class="QLabel" name="label_2">
@@ -101,10 +110,24 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="0">
+        <item row="3" column="0">
          <widget class="QLabel" name="label_4">
           <property name="text">
            <string>Seperator:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>Locale</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QComboBox" name="cb_locale">
+          <property name="focusPolicy">
+           <enum>Qt::StrongFocus</enum>
           </property>
          </widget>
         </item>
@@ -130,6 +153,9 @@
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Expanding</enum>
+          </property>
           <property name="sizeHint" stdset="0">
            <size>
             <width>40</width>
@@ -139,22 +165,30 @@
          </spacer>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton">
+         <widget class="QPushButton" name="pb_ok">
           <property name="focusPolicy">
            <enum>Qt::StrongFocus</enum>
           </property>
           <property name="text">
            <string>OK</string>
           </property>
+          <property name="icon">
+           <iconset resource="images.qrc">
+            <normaloff>:/icon/images/Success.png</normaloff>:/icon/images/Success.png</iconset>
+          </property>
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_2">
+         <widget class="QPushButton" name="pb_cancel">
           <property name="focusPolicy">
            <enum>Qt::StrongFocus</enum>
           </property>
           <property name="text">
            <string>Cancel</string>
+          </property>
+          <property name="icon">
+           <iconset resource="images.qrc">
+            <normaloff>:/icon/images/Cancel.png</normaloff>:/icon/images/Cancel.png</iconset>
           </property>
          </widget>
         </item>
@@ -166,14 +200,17 @@
   </layout>
  </widget>
  <tabstops>
-  <tabstop>lineEdit</tabstop>
-  <tabstop>toolButton</tabstop>
-  <tabstop>comboBox</tabstop>
-  <tabstop>lineEdit_2</tabstop>
-  <tabstop>lineEdit_3</tabstop>
-  <tabstop>pushButton</tabstop>
-  <tabstop>pushButton_2</tabstop>
+  <tabstop>le_file</tabstop>
+  <tabstop>tb_open</tabstop>
+  <tabstop>cb_locale</tabstop>
+  <tabstop>cb_datetime</tabstop>
+  <tabstop>le_seperator</tabstop>
+  <tabstop>le_decimal</tabstop>
+  <tabstop>pb_ok</tabstop>
+  <tabstop>pb_cancel</tabstop>
  </tabstops>
- <resources/>
+ <resources>
+  <include location="images.qrc"/>
+ </resources>
  <connections/>
 </ui>

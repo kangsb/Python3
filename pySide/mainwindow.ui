@@ -6,32 +6,32 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>640</width>
-    <height>480</height>
+    <width>618</width>
+    <height>458</height>
    </rect>
+  </property>
+  <property name="font">
+   <font>
+    <family>Microsoft YaHei</family>
+   </font>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QMdiArea" name="mdiArea">
-    <property name="geometry">
-     <rect>
-      <x>-1</x>
-      <y>-1</y>
-      <width>601</width>
-      <height>441</height>
-     </rect>
-    </property>
-   </widget>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QMdiArea" name="mdiArea"/>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>640</width>
-     <height>22</height>
+     <width>618</width>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -39,11 +39,6 @@
      <string>&amp;File</string>
     </property>
     <addaction name="actionOpen"/>
-   </widget>
-   <widget class="QMenu" name="menuTools">
-    <property name="title">
-     <string>&amp;Tools</string>
-    </property>
     <addaction name="actionSettings"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
@@ -53,7 +48,6 @@
     <addaction name="actionAbout"/>
    </widget>
    <addaction name="menu_File"/>
-   <addaction name="menuTools"/>
    <addaction name="menu_Help"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -65,7 +59,7 @@
     <enum>TopToolBarArea</enum>
    </attribute>
    <attribute name="toolBarBreak">
-    <bool>true</bool>
+    <bool>false</bool>
    </attribute>
    <addaction name="actionOpen"/>
    <addaction name="actionSettings"/>
@@ -74,8 +68,8 @@
   </widget>
   <action name="actionOpen">
    <property name="icon">
-    <iconset>
-     <normaloff>../res/csv.png</normaloff>../res/csv.png</iconset>
+    <iconset resource="images.qrc">
+     <normaloff>:/icon/images/Open.png</normaloff>:/icon/images/Open.png</iconset>
    </property>
    <property name="text">
     <string>Open...</string>
@@ -83,8 +77,8 @@
   </action>
   <action name="actionSettings">
    <property name="icon">
-    <iconset>
-     <normaloff>../res/settings.png</normaloff>../res/settings.png</iconset>
+    <iconset resource="images.qrc">
+     <normaloff>:/icon/images/Settings.png</normaloff>:/icon/images/Settings.png</iconset>
    </property>
    <property name="text">
     <string>Settings...</string>
@@ -92,14 +86,16 @@
   </action>
   <action name="actionAbout">
    <property name="icon">
-    <iconset>
-     <normaloff>../res/help.png</normaloff>../res/help.png</iconset>
+    <iconset resource="images.qrc">
+     <normaloff>:/icon/images/Help.png</normaloff>:/icon/images/Help.png</iconset>
    </property>
    <property name="text">
     <string>About...</string>
    </property>
   </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="images.qrc"/>
+ </resources>
  <connections/>
 </ui>

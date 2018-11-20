@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-
-from PySide2 import QtCore, QtGui, QtWidgets
-from PySide2.QtWidgets import QDialog, QMessageBox, QMainWindow
+import os
+from PySide2 import QtWidgets
+from PySide2.QtWidgets import QDialog, QMainWindow, QFileDialog, QMessageBox
 from ui_mainwindow import Ui_MainWindow
 from preference import Preference
+
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -11,23 +12,32 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         Ui_MainWindow.__init__(self)
         self.setupUi(self)
         self.actionOpen.triggered.connect(self.clicked_fileOpen)
-    
+        self.actionSettings.triggered.connect(self.clicked_settings)
+        self.filepath = None
+        self.filename = None
+
     def clicked_fileOpen(self):
-        """        msgBox = QMessageBox()
-        msgBox.setText("The document has been modified.")
-        msgBox.setInformativeText("Do you want to save your changes?")
-        msgBox.setStandardButtons(QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel)
-        msgBox.setDefaultButton(QMessageBox.Save)
-        ret = msgBox.exec_()
-        """
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        openfile, _ = QFileDialog.getOpenFileNames(self, "QFileDialog.getOpenFileNames()", "", "All files (*.*);;CSV Files (*.csv)", options=options)
+        if openfile:
+            self.filepath, ext = os.path.splitext(openfile[0])
+            self.filename = os.path.basename(openfile[0])
+            if ext.lower() != '.csv' and ext.lower() != '.xlsx':
+                QMessageBox.warning(self, "warning", "File extension error")
+                self.filepath = None
+                self.filename = None
+            else:
+                self.clicked_settings()
+
+    def clicked_settings(self):
         self.dlg = Preference()
-#        self.dlg.show()
+        self.dlg.le_file.setText(self.filepath)
         res = self.dlg.exec_()
         if res == QDialog.Accepted:
             print("Accepted")
         else:
             print("Rejected")
-        
 
 
 if __name__ == "__main__":
@@ -36,4 +46,3 @@ if __name__ == "__main__":
     w = MainWindow()
     w.show()
     sys.exit(app.exec_())
-    

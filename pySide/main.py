@@ -19,9 +19,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def clicked_fileOpen(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        openfile, _ = QFileDialog.getOpenFileNames(self, "QFileDialog.getOpenFileNames()", "", "All files (*.*);;CSV Files (*.csv)", options=options)
+        openfile, _ = QFileDialog.getOpenFileNames(self, "Open file", "", "All files (*.*);;CSV Files (*.csv)", options=options)
         if openfile:
-            self.filepath, ext = os.path.splitext(openfile[0])
+            _, ext = os.path.splitext(openfile[0])
+            self.filepath = openfile[0]
             self.filename = os.path.basename(openfile[0])
             if ext.lower() != '.csv' and ext.lower() != '.xlsx':
                 QMessageBox.warning(self, "warning", "File extension error")

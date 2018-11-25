@@ -4,7 +4,8 @@ from PySide2 import QtWidgets
 from PySide2.QtWidgets import QDialog, QMainWindow, QFileDialog, QMessageBox
 from ui_mainwindow import Ui_MainWindow
 from preference import Preference
-
+from mdi_child import MdiChild
+from PySide2.QtWidgets import QTabWidget
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -15,6 +16,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionSettings.triggered.connect(self.clicked_settings)
         self.filepath = None
         self.filename = None
+        child = self.createMdiChild()
+        child.show()
+
+    def createMdiChild(self):
+        child = MdiChild()
+        self.mdiArea.addSubWindow(child)
+        return child
 
     def clicked_fileOpen(self):
         options = QFileDialog.Options()

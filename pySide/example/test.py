@@ -1,65 +1,73 @@
-import sys
- 
-from PySide2.QtWidgets import QApplication, QMainWindow, QMenu, QVBoxLayout, QSizePolicy, QMessageBox, QWidget, QPushButton
-from PySide2.QtGui import QIcon
- 
- 
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
+from kivy.app import App
+from kivy.lang import Builder
+from kivy.uix.boxlayout import BoxLayout
+
+import numpy as np
 import matplotlib.pyplot as plt
- 
-import random
- 
-class App(QWidget):
- 
-    def __init__(self):
-        super().__init__()
-        self.left = 10
-        self.top = 10
-        self.title = 'PyQt5 matplotlib example - pythonspot.com'
-        self.width = 640
-        self.height = 400
-        self.initUI()
- 
-    def initUI(self):
-        self.setWindowTitle(self.title)
-        self.setGeometry(self.left, self.top, self.width, self.height)
- 
-        m = PlotCanvas(self, width=5, height=4)
-        m.move(0,0)
- 
-        button = QPushButton('PyQt5 button', self)
-        button.setToolTip('This s an example button')
-        button.move(500,0)
-        button.resize(140,100)
- 
-        self.show()
- 
- 
-class PlotCanvas(FigureCanvas):
- 
-    def __init__(self, parent=None, width=5, height=4, dpi=100):
-        fig = Figure(figsize=(width, height), dpi=dpi)
-        self.axes = fig.add_subplot(111)
- 
-        FigureCanvas.__init__(self, fig)
-        self.setParent(parent)
- 
-        FigureCanvas.setSizePolicy(self,
-                QSizePolicy.Expanding,
-                QSizePolicy.Expanding)
-        FigureCanvas.updateGeometry(self)
-        self.plot()
- 
- 
-    def plot(self):
-        data = [random.random() for i in range(25)]
-        ax = self.figure.add_subplot(111)
-        ax.plot(data, 'r-')
-        ax.set_title('PyQt Matplotlib Example')
-        self.draw()
- 
+from kivy.garden.matplotlib.backend_kivyagg import FigureCanvas
+
+
+def enter_axes(event):
+    print('enter_axes', event.inaxes)
+    event.inaxes.patch.set_facecolor('yellow')
+    event.canvas.draw()
+
+
+def leave_axes(event):
+    print('leave_axes', event.inaxes)
+    event.inaxes.patch.set_facecolor('white')
+    event.canvas.draw()
+
+
+def enter_figure(event):
+    print('enter_figure', event.canvas.figure)
+    event.canvas.figure.patch.set_facecolor('red')
+    event.canvas.draw()
+
+
+def leave_figure(event):
+    print('leave_figure', event.canvas.figure)
+    event.canvas.figure.patch.set_facecolor('grey')
+    event.canvas.draw()
+
+
+kv = """
+<Test>:
+    orientation: 'vertical'
+    Button:
+        size_hint_y: None
+        height: 40
+"""
+
+Builder.load_string(kv)
+
+
+class Test(BoxLayout):
+    def __init__(self, *args, **kwargs):
+        super(Test, self).__init__(*args, **kwargs)
+        self.add_plot()
+
+    def get_fc(self, i):
+        fig1 = plt.figure()
+        fig1.suptitle('mouse hover over figure or axes to trigger events' +
+                      str(i))
+        ax1 = fig1.add_subplot(211)
+        ax2 = fig1.add_subplot(212)
+        wid = FigureCanvas(fig1)
+        fig1.canvas.mpl_connect('figure_enter_event', enter_figure)
+        fig1.canvas.mpl_connect('figure_leave_event', leave_figure)
+        fig1.canvas.mpl_connect('axes_enter_event', enter_axes)
+        fig1.canvas.mpl_connect('axes_leave_event', leave_axes)
+        return wid
+
+    def add_plot(self):
+        self.add_widget(self.get_fc(1))
+        self.add_widget(self.get_fc(2))
+
+
+class TestApp(App):
+    def build(self):
+        return Test()
+
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    ex = App()
-    sys.exit(app.exec_())
+    TestApp().run()

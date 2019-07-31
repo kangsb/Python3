@@ -1,7 +1,9 @@
 # -*- coding:utf-8 -*-
 
+import sys
 import serial
 import threading
+from datetime import datetime, timedelta
 
 class SerialComm:
     def __init__(self, port, baudrate):
@@ -9,7 +11,7 @@ class SerialComm:
         self.baudrate = baudrate
         self.databit = 8
         self.stopbit = 1
-        self.parity = serial.PARITY_NONE
+        self.parity = serial.PARITY_EVEN # serial.PARITY_NONE
         self.flowcontrol = False
         self.alive = False
         self.receiver_thread = None
@@ -19,8 +21,8 @@ class SerialComm:
         self.bLeasedLine = True
 
     def open(self):
-        self.ser_handler = serial.Serial(self.port, self.baudrate)
-        self.modem_init()
+        self.ser_handler = serial.Serial(port=self.port, baudrate=self.baudrate, parity=self.parity)
+#        self.modem_init()
         self._start_receiver()
         #self._start_sender()
 
@@ -46,11 +48,23 @@ class SerialComm:
     def reader(self):
         """loop and copy serial->console"""
         try:
+            str_data = ''
             while self.ser_handler.is_open:
                 # read all that is there or wait for one byte
-                data = self.ser_handler.read(self.ser_handler.in_waiting or 1)
+                data = self.ser_handler.read(1) #(self.ser_handler.in_waiting or 1)
                 if data:
-                    print("recv: ", data)
+                    hex_string = data.hex() #binascii.hexlify(data).decode('utf-8')
+                    if hex_string == '11':
+                        str_data += '\n'
+                        dt = datetime.now()
+                        fn = dt.strftime('%Y%m%d-%H.txt')
+                        tm = dt.strftime('%H:%M:%S, ')
+                        with open(fn, "a") as f:
+                            f.write(tm)
+                            f.write(str_data)
+                            print(tm + str_data, end='')
+                            str_data = ''
+                    str_data += (hex_string + ' ')
 
         except serial.SerialException as err:
             print(err.to_string())
@@ -103,7 +117,7 @@ class SerialComm:
 
 
 if __name__ == '__main__':
-    ser = SerialComm('COM1', 115200)
+    ser = SerialComm('COM10', 1200)
     ser.open()
     while True:
         pass

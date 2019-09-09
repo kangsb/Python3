@@ -4,9 +4,11 @@ import sys
 import serial
 import threading
 from datetime import datetime, timedelta
+import logging
+import logging.handlers
 
 class SerialComm:
-    def __init__(self, port, baudrate):
+    def __init__(self, port, baudrate, log):
         self.port = port
         self.baudrate = baudrate
         self.databit = 8
@@ -19,6 +21,7 @@ class SerialComm:
         self.reader_alive = None
         self.ser_handler = None
         self.bLeasedLine = True
+        self.log = log
 
     def open(self):
         self.ser_handler = serial.Serial(port=self.port, baudrate=self.baudrate, parity=self.parity)
@@ -28,14 +31,14 @@ class SerialComm:
 
     def _start_sender(self):
         """sender thread"""
-        print('Sender thread now running')
+        self.log.info('Sender thread now running')
         self.sender_thread = threading.Thread(target=self.sender, name='tx')
         self.sender_thread.daemon = True
         self.sender_thread.start()
 
     def _start_receiver(self):
         """receiver thread"""
-        print('Receiver thread now running')
+        self.log.info('Receiver thread now running')
         self.reader_alive = True
         self.receiver_thread = threading.Thread(target=self.reader, name='rx')
         self.receiver_thread.daemon = True
@@ -47,6 +50,7 @@ class SerialComm:
 
     def reader(self):
         """loop and copy serial->console"""
+        normal = ['1a', '20', '4f', '4e', '6e', '80', 'a0', 'c6', 'e6', 'f8' ]
         try:
             str_data = ''
             while self.ser_handler.is_open:
@@ -54,18 +58,15 @@ class SerialComm:
                 data = self.ser_handler.read(1) #(self.ser_handler.in_waiting or 1)
                 if data:
                     hex_string = data.hex() #binascii.hexlify(data).decode('utf-8')
-                    if hex_string == '11':
-                        str_data += '\n'
-                        dt = datetime.now()
-                        fn = dt.strftime('%Y%m%d-%H.txt')
-                        tm = dt.strftime('%H:%M:%S, ')
-                        with open(fn, "a") as f:
-                            f.write(tm)
-                            f.write(str_data)
-                            print(tm + str_data, end='')
-                            str_data = ''
-                    str_data += (hex_string + ' ')
-
+                    if (data[0] & 0xF8) == 0xF8 and data[0] != 0xF8:   
+                        self.log.info(hex_string)
+                    """    
+                    if hex_string in normal:
+                        self.log.info(hex_string)
+                        pass
+                    else:
+                        self.log.error(hex_string)
+                    """
         except serial.SerialException as err:
             print(err.to_string())
             self.alive = False
@@ -117,7 +118,30 @@ class SerialComm:
 
 
 if __name__ == '__main__':
-    ser = SerialComm('COM10', 1200)
+    if len(sys.argv) == 2:
+        port = sys.argv[1]
+    else:
+        port = 'com5'
+
+    fn = 'log_' + port
+    myLogFormatter = logging.Formatter('[%(asctime)s | %(levelname)s] %(message)s')
+
+    #handler settings
+    myLogHandler = logging.handlers.TimedRotatingFileHandler(filename=fn+'.log', when='midnight', interval=1, encoding='utf-8')
+    myLogHandler.setFormatter(myLogFormatter)
+    myLogHandler.suffix = "%Y%m%d"
+
+    streamHandler = logging.StreamHandler()
+    streamHandler.setFormatter(myLogFormatter)
+
+    #logger set
+    myLogger = logging.getLogger()
+    myLogger.setLevel(logging.DEBUG)
+    myLogger.addHandler(myLogHandler)
+    myLogger.addHandler(streamHandler)
+
+#    print('COM Port = ' + port)
+    ser = SerialComm(port , 1200, myLogger)
     ser.open()
     while True:
         pass

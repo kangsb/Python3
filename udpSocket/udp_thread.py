@@ -6,12 +6,13 @@ import threading
 import logging
 import logging.handlers
 import sys
+import binascii
 
-remote_addr = '172.16.2.180'
-remote_port = 39009
-#172.16.2.53
+remote_addr = '172.16.1.209'
+remote_port = 39005
+
 class UdpSender(threading.Thread):
-    def __init__(self, ssock, remoteaddr, log):
+    def __init__(self, ssock, remoteaddr, port, log):
         threading.Thread.__init__(self)
         self.ssock = ssock
         self.remoteaddr = remoteaddr
@@ -22,15 +23,16 @@ class UdpSender(threading.Thread):
         self.log.info('Sender thread is now running...')
         index = 0
         while not self.keyboardinterrupt:
-            darray = [['1A', '20', '48', '68', '81', 'A1', 'C1', 'E0'], ['0A', '21', '49', '69', '94', 'A0', 'C0', 'E0']]
+            darray = [['D1', '77']]#, ['08', 'AE'], ['80', 'A0'], ['C6', 'E6'], ['F8', '1A'], ['20', '4F'], ['80', 'A0'], ['C6', 'E6'], ['F8', '1A'], ['20', '4F'], ['80', 'A0'], ['C6', 'E6'], ['F8', '1A'], ['20', '4F'], ['80', 'A0'], ['C6', 'E6'], ['F8', '1A'], ['20', '4F'], ['80', 'A0'], ['C6', 'E6'], ['F8', '1A'], ['20', '4F'], ['80', 'A0'], ['C6', 'E6'], ['F8', '1A'], ['20', '4F']]
             for var in darray[index]:
                 data = bytes.fromhex(var)
                 self.ssock.sendto(data, self.remoteaddr)
-                time.sleep(0.1)
-            if index == 0:
-                index = 1
-            else:
+                self.log.info(binascii.hexlify(data))
+            index += 1
+            if index == 1:
                 index = 0
+            time.sleep(5)
+  
         self.log.info("Sender thread terminated")
 """
             darray = '1220406080A0C0E0'
@@ -46,25 +48,41 @@ class UdpReceiver(threading.Thread):
         self.log = log
 
     def run(self):
-        logging.info('Receiver thread is now running...')
+        self.log.info('Receiver thread is now running...')
         lastesttime = time.time()
         while not self.keyboardinterrupt:
             curtime = time.time()
-            msg, addr = self.rsock.recvfrom(512)
-            self.log.info(msg.hex())
-            diff = curtime - lastesttime
-            if diff > 3:
-                self.log.error("RX disconnected")
-            lastesttime = curtime
+            try:
+                msg, addr = self.rsock.recvfrom(512)
+#                self.log.info(msg.hex())
+                lastesttime = curtime
+            except socket.timeout:
+                diff = curtime - lastesttime
+                if diff > 5:
+                    self.log.error("RX disconnected " + str(diff))
+                    lastesttime = curtime
 
-        logging.info("Receiver thread terminated")
+        self.log.info("Receiver thread terminated")
 
 def main():
+    global remote_port
+    global remote_addr
+    if len(sys.argv) == 3:
+        raddr = sys.argv[1]
+        port = int(sys.argv[2])
+    else:
+        port = remote_port
+        raddr = remote_addr
+    
+    remote_port = port
+    remote_addr = raddr
+
     # for Logger
+    fname = raddr + "_" + str(port) + ".log"
     myLogFormatter = logging.Formatter('[%(asctime)s | %(levelname)s] %(message)s')
 
     #handler settings
-    myLogHandler = logging.handlers.TimedRotatingFileHandler(filename='debug.log', when='midnight', interval=1, encoding='utf-8')
+    myLogHandler = logging.handlers.TimedRotatingFileHandler(filename=fname, when='midnight', interval=1, encoding='utf-8')
     myLogHandler.setFormatter(myLogFormatter)
     myLogHandler.suffix = "%Y%m%d"
 
@@ -78,22 +96,23 @@ def main():
     myLogger.addHandler(streamHandler)
 
     # Create a UDP socket
-    remoteaddress = (remote_addr, remote_port)
+    remoteaddress = (raddr, port)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.settimeout(1)
     #sock.setblocking(0)
     # Bind the socket to the port
     sock.bind(('', remoteaddress[1]))
 
     myLogger.info('starting up on {} port {}'.format(*remoteaddress))
 
-    txthread = UdpSender(sock, remoteaddress, myLogger)
+    txthread = UdpSender(sock, remoteaddress, port, myLogger)
+    txthread.start()
     rxthread = UdpReceiver(sock, myLogger)
+    rxthread.start()
 
 #    txthread.daemon = True
 #    rxthread.daemon = True
 
-    txthread.start()
-    rxthread.start()
 
     while True:
         try:

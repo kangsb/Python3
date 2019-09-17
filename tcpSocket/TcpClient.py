@@ -5,8 +5,8 @@ import socket
 import sys
 
 def main():
-    host = "172.16.1.51"
-    port = 38317
+    host = "172.16.1.45"
+    port = 9888#38317
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         s.connect((host, port))
@@ -16,9 +16,14 @@ def main():
 
     while True:
 #        s.sendall(message.encode("utf8"))
-        if s.recv(5120).decode("hex") == "-":
+        data = s.recv(512)
+        if data:
+            print(data.decode('utf8'))
+#            print(data.hex())
             pass # null operation
-        message = input(" -> ")
+        else:
+            pass
+#        message = input(" -> ")
 #    s.send(b'--quit--')
 
 if __name__ == "__main__":

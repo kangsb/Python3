@@ -8,8 +8,8 @@ import logging.handlers
 import sys
 import binascii
 
-remote_addr = '172.16.1.209'
-remote_port = 39005
+remote_addr = '172.16.1.180'
+remote_port = 39004
 
 class UdpSender(threading.Thread):
     def __init__(self, ssock, remoteaddr, port, log):
@@ -23,7 +23,8 @@ class UdpSender(threading.Thread):
         self.log.info('Sender thread is now running...')
         index = 0
         while not self.keyboardinterrupt:
-            darray = [['1A', '20', '4E', '6E', '80', 'A0', 'C6', 'E6', 'F8', '1A', '20', '4F', '6E'], ['1A', '20', '4F', '6E', '80', 'A0', 'C6', 'E6', 'F8', '1A', '20', '4F', '6E']]
+#            darray = [['18', '20', '4E', '6E', '80', 'A0', 'C6', 'E1', 'F8'], ['18', '20', '4F', '6E', '80', 'A0', 'C6', 'E1', 'F8']]
+            darray = [['18', '20', '4E', '6E', '80', 'A0', 'C6', 'E7', 'F8'], ['18', '20', '4F', '6E', '80', 'A0', 'C6', 'E7', 'F8']]
             for var in darray[index]:
                 data = bytes.fromhex(var)
                 self.ssock.sendto(data, self.remoteaddr)
@@ -55,11 +56,11 @@ class UdpReceiver(threading.Thread):
             curtime = time.time()
             try:
                 msg, addr = self.rsock.recvfrom(512)
-                self.log.info(msg.hex())
+#                self.log.info(msg.hex())
                 lastesttime = curtime
             except socket.timeout:
                 diff = curtime - lastesttime
-                if diff > 5:
+                if diff > 3:
                     self.log.error("RX disconnected " + str(diff))
                     lastesttime = curtime
         self.log.info("Receiver thread terminated")

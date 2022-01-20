@@ -7,10 +7,16 @@ import logging
 import logging.handlers
 import sys
 import binascii
+<<<<<<< HEAD
 import struct
 
 remote_addr = '172.16.1.60'
 remote_port = 55555
+=======
+
+remote_addr = '172.16.1.180'
+remote_port = 39004
+>>>>>>> 71312fed43d3240538cc7e4b5045381cbd4c37c3
 
 class UdpSender(threading.Thread):
     def __init__(self, ssock, remoteaddr, port, log):
@@ -23,8 +29,14 @@ class UdpSender(threading.Thread):
     def run(self):
         self.log.info('Sender thread is now running...')
         index = 0
+<<<<<<< HEAD
         darray = [['21', '31', '41', '51', '61', '71', '81', '91'], ['21', '31', '41', '51', '61', '71', '81', '91']]
         while not self.keyboardinterrupt:
+=======
+        while not self.keyboardinterrupt:
+#            darray = [['18', '20', '4E', '6E', '80', 'A0', 'C6', 'E1', 'F8'], ['18', '20', '4F', '6E', '80', 'A0', 'C6', 'E1', 'F8']]
+            darray = [['18', '20', '4E', '6E', '80', 'A0', 'C6', 'E7', 'F8'], ['18', '20', '4F', '6E', '80', 'A0', 'C6', 'E7', 'F8']]
+>>>>>>> 71312fed43d3240538cc7e4b5045381cbd4c37c3
             for var in darray[index]:
                 data = bytes.fromhex(var)
                 self.ssock.sendto(data, self.remoteaddr)
@@ -33,7 +45,11 @@ class UdpSender(threading.Thread):
                 index = 1
             else:
                 index = 0
+<<<<<<< HEAD
             time.sleep(0.01) 
+=======
+            time.sleep(0.1)
+>>>>>>> 71312fed43d3240538cc7e4b5045381cbd4c37c3
   
         self.log.info("Sender thread terminated")
 """
@@ -55,6 +71,7 @@ class UdpReceiver(threading.Thread):
         while not self.keyboardinterrupt:
             curtime = time.time()
             try:
+<<<<<<< HEAD
                 msg, addr = self.rsock.recvfrom(32)
                 #self.log.info(msg.hex())
                 lastesttime = curtime
@@ -66,6 +83,16 @@ class UdpReceiver(threading.Thread):
             except socket.error:
                 pass
             time.sleep(0.1)
+=======
+                msg, addr = self.rsock.recvfrom(512)
+#                self.log.info(msg.hex())
+                lastesttime = curtime
+            except socket.timeout:
+                diff = curtime - lastesttime
+                if diff > 3:
+                    self.log.error("RX disconnected " + str(diff))
+                    lastesttime = curtime
+>>>>>>> 71312fed43d3240538cc7e4b5045381cbd4c37c3
         self.log.info("Receiver thread terminated")
 
 def main():
@@ -103,7 +130,10 @@ def main():
     remoteaddress = (raddr, port)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.settimeout(1)
+<<<<<<< HEAD
     #sock.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER, struct.pack('ii', 1, 10))
+=======
+>>>>>>> 71312fed43d3240538cc7e4b5045381cbd4c37c3
     #sock.setblocking(0)
     # Bind the socket to the port
     sock.bind(('', remoteaddress[1]))

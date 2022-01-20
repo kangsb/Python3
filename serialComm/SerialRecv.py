@@ -50,7 +50,12 @@ class SerialComm:
 
     def reader(self):
         """loop and copy serial->console"""
+<<<<<<< HEAD
         normal = ['1a', '20', '4f', '4e', '6e', '80', 'a0', 'c6', 'e6', 'f8' ]
+=======
+#        normal = ['1a', '20', '4f', '4e', '6e', '80', 'be', 'c6', 'e6', 'f8' ]
+        normal = ['1a', '20', '48', '68', '95', 'be', 'c6', 'e6', 'f8' ]
+>>>>>>> 71312fed43d3240538cc7e4b5045381cbd4c37c3
         try:
             str_data = ''
             while self.ser_handler.is_open:
@@ -58,6 +63,7 @@ class SerialComm:
                 data = self.ser_handler.read(1) #(self.ser_handler.in_waiting or 1)
                 if data:
                     hex_string = data.hex() #binascii.hexlify(data).decode('utf-8')
+<<<<<<< HEAD
                     self.log.info(hex_string)
                     """    
                     if hex_string in normal:
@@ -66,6 +72,13 @@ class SerialComm:
                     else:
                         self.log.error(hex_string)
                     """
+=======
+                    if hex_string in normal:
+#                        self.log.info(hex_string)
+                        pass
+                    else:
+                        self.log.error(hex_string)
+>>>>>>> 71312fed43d3240538cc7e4b5045381cbd4c37c3
         except serial.SerialException as err:
             print(err.to_string())
             self.alive = False

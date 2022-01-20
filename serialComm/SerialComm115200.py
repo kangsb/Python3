@@ -13,7 +13,7 @@ class SerialComm:
         self.baudrate = baudrate
         self.databit = 8
         self.stopbit = 1
-        self.parity = serial.PARITY_EVEN # serial.PARITY_NONE
+        self.parity = serial.PARITY_NONE
         self.flowcontrol = False
         self.alive = False
         self.receiver_thread = None
@@ -51,7 +51,7 @@ class SerialComm:
     def reader(self):
         """loop and copy serial->console"""
         # normal = ['1a', '20', '4f', '4e', '6e', '80', 'a0', 'c6', 'e6', 'f8' ]
-        normal = [0x21, 0x31, 0x41, 0x51, 0x61, 0x71, 0x81, 0x91 ]
+        normal = [0x21, 0x31, 0x41, 0x51, 0x61, 0x71, 0x81, 0x91]
         try:
             str_data = ''
             while self.ser_handler.is_open:
@@ -157,7 +157,7 @@ if __name__ == '__main__':
     myLogger.addHandler(streamHandler)
 
 #    print('COM Port = ' + port)
-    ser = SerialComm(port , 1200, myLogger, verbose)
+    ser = SerialComm(port , 115200, myLogger, verbose)
     ser.open()
     while True:
         pass

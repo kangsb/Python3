@@ -8,8 +8,13 @@ import logging.handlers
 import sys
 import binascii
 
-remote_addr = '172.16.1.209'
-remote_port = 39005
+rcu_addr = '192.168.1.180'
+#lmi_addr = '192.168.1.150'
+lmi_addr = '192.168.1.174'
+remote_port = 39009
+
+to_rcu = (rcu_addr, remote_port)
+to_lmi = (lmi_addr, remote_port)
 
 class UdpSender(threading.Thread):
     def __init__(self, ssock, remoteaddr, port, log):
@@ -21,17 +26,10 @@ class UdpSender(threading.Thread):
 
     def run(self):
         self.log.info('Sender thread is now running...')
+        self.ssock.sendto(b'7f', self.remoteaddr)
         index = 0
         while not self.keyboardinterrupt:
-            darray = [['D1', '77']]#, ['08', 'AE'], ['80', 'A0'], ['C6', 'E6'], ['F8', '1A'], ['20', '4F'], ['80', 'A0'], ['C6', 'E6'], ['F8', '1A'], ['20', '4F'], ['80', 'A0'], ['C6', 'E6'], ['F8', '1A'], ['20', '4F'], ['80', 'A0'], ['C6', 'E6'], ['F8', '1A'], ['20', '4F'], ['80', 'A0'], ['C6', 'E6'], ['F8', '1A'], ['20', '4F'], ['80', 'A0'], ['C6', 'E6'], ['F8', '1A'], ['20', '4F']]
-            for var in darray[index]:
-                data = bytes.fromhex(var)
-                self.ssock.sendto(data, self.remoteaddr)
-                self.log.info(binascii.hexlify(data))
-            index += 1
-            if index == 1:
-                index = 0
-            time.sleep(5)
+            time.sleep(1)
   
         self.log.info("Sender thread terminated")
 """
@@ -54,7 +52,12 @@ class UdpReceiver(threading.Thread):
             curtime = time.time()
             try:
                 msg, addr = self.rsock.recvfrom(512)
-#                self.log.info(msg.hex())
+                if addr[0] == rcu_addr:
+                    self.log.info('from RCU ' + msg.hex())
+                    self.rsock.sendto(msg, to_lmi)
+                elif addr[0] == lmi_addr:
+                    #self.log.info('from LMI ' + msg.hex())
+                    self.rsock.sendto(msg, to_rcu)
                 lastesttime = curtime
             except socket.timeout:
                 diff = curtime - lastesttime
@@ -65,20 +68,11 @@ class UdpReceiver(threading.Thread):
         self.log.info("Receiver thread terminated")
 
 def main():
+    global rcu_addr
+    global lmi_addr
     global remote_port
-    global remote_addr
-    if len(sys.argv) == 3:
-        raddr = sys.argv[1]
-        port = int(sys.argv[2])
-    else:
-        port = remote_port
-        raddr = remote_addr
-    
-    remote_port = port
-    remote_addr = raddr
-
     # for Logger
-    fname = raddr + "_" + str(port) + ".log"
+    fname = lmi_addr + "_" + str(remote_port) + ".log"
     myLogFormatter = logging.Formatter('[%(asctime)s | %(levelname)s] %(message)s')
 
     #handler settings
@@ -96,17 +90,17 @@ def main():
     myLogger.addHandler(streamHandler)
 
     # Create a UDP socket
-    remoteaddress = (raddr, port)
+    remoteaddress = (lmi_addr, remote_port)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.settimeout(1)
     #sock.setblocking(0)
     # Bind the socket to the port
     sock.bind(('', remoteaddress[1]))
 
-    myLogger.info('starting up on {} port {}'.format(*remoteaddress))
-
-    txthread = UdpSender(sock, remoteaddress, port, myLogger)
+#    myLogger.info('starting up on {} port {}'.format(*remoteaddress))
+    txthread = UdpSender(sock, remoteaddress, remote_port, myLogger)
     txthread.start()
+
     rxthread = UdpReceiver(sock, myLogger)
     rxthread.start()
 

@@ -8,7 +8,7 @@ import logging
 import logging.handlers
 
 class SerialComm:
-    def __init__(self, port, baudrate, log, verbose):
+    def __init__(self, port, baudrate, log):
         self.port = port
         self.baudrate = baudrate
         self.databit = 8
@@ -22,7 +22,7 @@ class SerialComm:
         self.ser_handler = None
         self.bLeasedLine = True
         self.log = log
-        self.opt_v = verbose;
+
     def open(self):
         self.ser_handler = serial.Serial(port=self.port, baudrate=self.baudrate, parity=self.parity)
 #        self.modem_init()
@@ -50,28 +50,16 @@ class SerialComm:
 
     def reader(self):
         """loop and copy serial->console"""
-        # normal = ['1a', '20', '4f', '4e', '6e', '80', 'a0', 'c6', 'e6', 'f8' ]
-        normal = [0x21, 0x31, 0x41, 0x51, 0x61, 0x71, 0x81, 0x91 ]
+        normal = ['1a', '20', '4f', '4e', '6e', '80', 'a0', 'c6', 'e6', 'f8' ]
         try:
             str_data = ''
             while self.ser_handler.is_open:
                 # read all that is there or wait for one byte
                 data = self.ser_handler.read(1) #(self.ser_handler.in_waiting or 1)
                 if data:
-                    if self.opt_v:
-                        print(data.hex(), end=' ') #binascii.hexlify(data).decode('utf-8')
-                        sys.stdout.flush()
-                    # if (data[0] >> 5) == 0x01 and (data[0] & 0x01) == 0x00:
-                    #     mesg = 'Interlock bit changed: 0x' + data.hex()
-                    #     self.log.error(mesg)
-                    # else:
-                    #     self.log.info(data.hex())
-                    if data[0] not in normal:
-                        mesg = 'Unknown data: 0x' + data.hex()
-                        self.log.error(mesg)
-                    """ if (data[0] & 0xF8) == 0xF8 and data[0] != 0xF8:   
-                        self.log.info(hex_string)
-                       
+                    hex_string = data.hex() #binascii.hexlify(data).decode('utf-8')
+                    self.log.info(hex_string)
+                    """    
                     if hex_string in normal:
                         self.log.info(hex_string)
                         pass
@@ -129,13 +117,8 @@ class SerialComm:
 
 
 if __name__ == '__main__':
-    verbose = False
     if len(sys.argv) == 2:
         port = sys.argv[1]
-    elif len(sys.argv) == 3:
-        port = sys.argv[1]
-        if (sys.argv[2] == '-v'):
-            verbose = True
     else:
         port = 'com5'
 
@@ -152,12 +135,12 @@ if __name__ == '__main__':
 
     #logger set
     myLogger = logging.getLogger()
-    myLogger.setLevel(logging.DEBUG)    
+    myLogger.setLevel(logging.DEBUG)
     myLogger.addHandler(myLogHandler)
     myLogger.addHandler(streamHandler)
 
 #    print('COM Port = ' + port)
-    ser = SerialComm(port , 1200, myLogger, verbose)
+    ser = SerialComm(port , 1200, myLogger)
     ser.open()
     while True:
         pass

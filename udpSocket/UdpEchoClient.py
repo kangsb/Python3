@@ -7,40 +7,13 @@ import logging
 import logging.handlers
 import sys
 import binascii
+import struct
 
-remote_addr = '172.16.1.209'
-remote_port = 39005
+remote_addr = '172.16.1.41'
+remote_port = 7272
 
-class UdpSender(threading.Thread):
-    def __init__(self, ssock, remoteaddr, port, log):
-        threading.Thread.__init__(self)
-        self.ssock = ssock
-        self.remoteaddr = remoteaddr
-        self.keyboardinterrupt = False
-        self.log = log
 
-    def run(self):
-        self.log.info('Sender thread is now running...')
-        index = 0
-        while not self.keyboardinterrupt:
-            darray = [['D1', '77']]#, ['08', 'AE'], ['80', 'A0'], ['C6', 'E6'], ['F8', '1A'], ['20', '4F'], ['80', 'A0'], ['C6', 'E6'], ['F8', '1A'], ['20', '4F'], ['80', 'A0'], ['C6', 'E6'], ['F8', '1A'], ['20', '4F'], ['80', 'A0'], ['C6', 'E6'], ['F8', '1A'], ['20', '4F'], ['80', 'A0'], ['C6', 'E6'], ['F8', '1A'], ['20', '4F'], ['80', 'A0'], ['C6', 'E6'], ['F8', '1A'], ['20', '4F']]
-            for var in darray[index]:
-                data = bytes.fromhex(var)
-                self.ssock.sendto(data, self.remoteaddr)
-                self.log.info(binascii.hexlify(data))
-            index += 1
-            if index == 1:
-                index = 0
-            time.sleep(5)
-  
-        self.log.info("Sender thread terminated")
-"""
-            darray = '1220406080A0C0E0'
-            data = bytes.fromhex(darray)
-            self.ssock.sendto(data, self.remoteaddr)
-"""
-
-class UdpReceiver(threading.Thread):
+class UdpEchoClient(threading.Thread):
     def __init__(self, rsock, log):
         threading.Thread.__init__(self)
         self.rsock = rsock
@@ -48,20 +21,28 @@ class UdpReceiver(threading.Thread):
         self.log = log
 
     def run(self):
-        self.log.info('Receiver thread is now running...')
+        self.log.info('Udp echo client thread is now running...')
         lastesttime = time.time()
+        id = 0
         while not self.keyboardinterrupt:
             curtime = time.time()
             try:
-                msg, addr = self.rsock.recvfrom(512)
-#                self.log.info(msg.hex())
+                id += 1
+                self.rsock.sendto(str(id).encode('utf-8'), (remote_addr, remote_port))
+                msg, addr = self.rsock.recvfrom(32)
+                msg = msg.decode()
+                self.log.info(msg)
                 lastesttime = curtime
+                if str(id) != msg:
+                    self.log.error("Data mismatched: " + str(id) + " != " + msg)
             except socket.timeout:
                 diff = curtime - lastesttime
-                if diff > 5:
+                if diff > 2:
                     self.log.error("RX disconnected " + str(diff))
                     lastesttime = curtime
-
+            except socket.error:
+                pass
+            #time.sleep(1)
         self.log.info("Receiver thread terminated")
 
 def main():
@@ -99,15 +80,14 @@ def main():
     remoteaddress = (raddr, port)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.settimeout(1)
+    #sock.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER, struct.pack('ii', 1, 10))
     #sock.setblocking(0)
     # Bind the socket to the port
     sock.bind(('', remoteaddress[1]))
 
     myLogger.info('starting up on {} port {}'.format(*remoteaddress))
 
-    txthread = UdpSender(sock, remoteaddress, port, myLogger)
-    txthread.start()
-    rxthread = UdpReceiver(sock, myLogger)
+    rxthread = UdpEchoClient(sock, myLogger)
     rxthread.start()
 
 #    txthread.daemon = True
@@ -120,11 +100,9 @@ def main():
         except KeyboardInterrupt:
             # Ctrl-C handling and send kill to threads
             myLogger.info("Sending kill to threads...")
-            txthread.keyboardinterrupt = True
             rxthread.keyboardinterrupt = True
             break
 
-    txthread.join()
     rxthread.join()
     sock.close()
 
